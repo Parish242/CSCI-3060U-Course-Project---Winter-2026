@@ -43,4 +43,23 @@ class AccountsList:
     def fetchAccounts(cls):
         # This should be recieved from the backend.
         # For now, a placeholder should be written for testing purposes.
-        pass
+        cls.accounts = []
+        file_path = os.path.join(os.path.dirname(__file__), "..", "current_accounts.txt")
+        if not os.path.exists(file_path):
+            print("Warning: current_accounts.txt not found")
+            return
+
+        with open(file_path, "r") as f:
+            for line in f:
+                if line.startswith("00000 END_OF_FILE"):
+                    continue
+                acc_number = int(line[0:5])
+                acc_name = line[5:25].rstrip()
+                acc_status = line[25]
+                acc_balance = float(line[26:34])
+                cls.accounts.append({
+                    'accountNumber': acc_number,
+                    'accountName': acc_name,
+                    'status': acc_status,
+                    'balance': acc_balance
+                })

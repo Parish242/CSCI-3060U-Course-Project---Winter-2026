@@ -211,7 +211,6 @@ def transfer(session) -> dict:
     return log_transaction(session, '02', account_holder, to_acc_num, amount, f'{from_acc_num:05d}')
 
 
-# TODO
 def paybill(session) -> dict:
     """
     Pay a bill from a bank account.
@@ -249,7 +248,6 @@ def paybill(session) -> dict:
 
     return log_transaction(session, '03', account_holder, account_number, amount, company)
 
-# TODO
 def deposit(session) -> dict:
     # immediately increments the value for the sake of testing/being a prototype
     """
@@ -280,7 +278,6 @@ def deposit(session) -> dict:
 
     return log_transaction(session, '04', account_holder, account_number, amount)
 
-# TODO
 def create(session) -> dict:
     """
     Create a new bank account with an initial balance (ADMIN ONLY).
@@ -319,7 +316,6 @@ def create(session) -> dict:
 
     return log_transaction(session, '05', account_holder, new_acc_num, initial_balance)
 
-# TODO
 def delete(session) -> dict:
     """
     Delete an existing bank account (ADMIN ONLY).
@@ -348,7 +344,6 @@ def delete(session) -> dict:
 
     return log_transaction(session, '06', account_holder, account_number, 0)
 
-# TODO
 def disable(session) -> dict:
     """
     Disable a bank account (ADMIN ONLY).

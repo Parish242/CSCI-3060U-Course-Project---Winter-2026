@@ -1,6 +1,3 @@
-# TODO Implement remaining transactions (create, delete, disable, changeplan, withdrawal, transfer, paybill, deposit)
-# - Lines 127-324
-
 """
 Transaction function implementations for the Banking System Front End.
 Contains all banking transaction operations such as login, logout, withdrawal, transfer, paybill, deposit, and admin functions.
@@ -83,6 +80,9 @@ def logout(session) -> dict:
     """
     End a Front End session and write transaction file.
 
+    For this prototype, account changes (balances, status, plans) are not written to current_accounts.txt. 
+    Only the transaction log is kept.
+
     Args:
         session: Current Session object
 
@@ -125,7 +125,6 @@ def logout(session) -> dict:
 
     return None
 
-# TODO 
 def withdrawal(session) -> dict:
     """
     Withdraw money from a bank account.
@@ -139,17 +138,30 @@ def withdrawal(session) -> dict:
     if not require_login(session):
         return None
 
-    print_transaction_header("Withdrawal")
+    print_transaction_header("Withdrawal", pending=False)
 
     account_holder = get_account_holder(session)
     account_number = get_account_number()
     amount = get_amount("Enter withdrawal amount")
 
-    print("Withdrawal done but not really")
+    if amount > session.transactionLimits['withdrawal']:
+        print("ERROR: Exceeds session withdrawal limit")
+        return None
+
+    for acc in session.accounts.getAccounts():
+        if acc['accountNumber'] == account_number and acc['accountName'] == account_holder:
+            if acc['balance'] - amount < 0:
+                print("ERROR: Insufficient funds")
+                return None
+            acc['balance'] -= amount
+            break
+    else:
+        print("ERROR: Account not found")
+        return None
 
     return log_transaction(session, '01', account_holder, account_number, amount)
 
-# TODO
+
 def transfer(session) -> dict:
     """
     Transfer money between two bank accounts.
@@ -163,18 +175,41 @@ def transfer(session) -> dict:
     if not require_login(session):
         return None
 
-    print_transaction_header("Transfer")
+    print_transaction_header("Transfer", pending=False)
 
     account_holder = get_account_holder(session)
-    from_account = get_account_number("Enter account number to transfer FROM")
-    to_account = get_account_number("Enter account number to transfer TO")
+    from_acc_num = get_account_number("Enter account number to transfer FROM")
+    to_acc_num = get_account_number("Enter account number to transfer TO")
     amount = get_amount("Enter transfer amount")
 
-    print("Transfer done but not really")
+    if amount > session.transactionLimits['transfer']:
+        print("ERROR: Exceeds session transfer limit")
+        return None
 
-    # Use from_account as misc field (limited to 2 digits for now)
-    return log_transaction(session, '02', account_holder, to_account, amount, 
-                          f'{from_account:02d}')
+    from_account = None
+    to_account = None
+    for acc in session.accounts.getAccounts():
+        if acc['accountNumber'] == from_acc_num and acc['accountName'] == account_holder:
+            from_account = acc
+        if acc['accountNumber'] == to_acc_num:
+            to_account = acc
+
+    if not from_account:
+        print("ERROR: Source account not found or not owned by account holder")
+        return None
+    if not to_account:
+        print("ERROR: Destination account not found")
+        return None
+    if from_account['balance'] - amount < 0:
+        print("ERROR: Insufficient funds in source account")
+        return None
+
+    from_account['balance'] -= amount
+    to_account['balance'] += amount
+
+    # Log transaction, using source account in misc
+    return log_transaction(session, '02', account_holder, to_acc_num, amount, f'{from_acc_num:05d}')
+
 
 # TODO
 def paybill(session) -> dict:
@@ -197,12 +232,26 @@ def paybill(session) -> dict:
     company = get_company_code()
     amount = get_amount("Enter payment amount")
 
-    print("Bill payment done but not really")
+    if amount > session.transactionLimits['paybill']:
+        print("ERROR: Exceeds session paybill limit")
+        return None
+
+    for acc in session.accounts.getAccounts():
+        if acc['accountNumber'] == account_number and acc['accountName'] == account_holder:
+            if acc['balance'] - amount < 0:
+                print("ERROR: Insufficient funds")
+                return None
+            acc['balance'] -= amount
+            break
+    else:
+        print("ERROR: Account not found")
+        return None
 
     return log_transaction(session, '03', account_holder, account_number, amount, company)
 
 # TODO
 def deposit(session) -> dict:
+    # immediately increments the value for the sake of testing/being a prototype
     """
     Deposit money into a bank account.
 
@@ -221,8 +270,13 @@ def deposit(session) -> dict:
     account_number = get_account_number()
     amount = get_amount("Enter deposit amount")
 
-    print("Deposit done but not really")
-    print("NOTE: Funds will be available in next session")
+    for acc in session.accounts.getAccounts():
+        if acc['accountNumber'] == account_number and acc['accountName'] == account_holder:
+            acc['balance'] += amount  # funds added but note: not available until next session
+            break
+    else:
+        print("ERROR: Account not found")
+        return None
 
     return log_transaction(session, '04', account_holder, account_number, amount)
 
@@ -250,9 +304,20 @@ def create(session) -> dict:
     if not validate_balance(initial_balance):
         return None
 
-    print("Account creation done but not really")
+    # Generate new unique account number
+    max_acc = max((acc['accountNumber'] for acc in session.accounts.getAccounts()), default=0)
+    new_acc_num = max_acc + 1
 
-    return log_transaction(session, '05', account_holder, 0, initial_balance)
+    session.accounts.accounts.append({
+        'accountNumber': new_acc_num,
+        'accountName': account_holder,
+        'status': 'A',
+        'balance': initial_balance,
+        'plan': 'SP'  
+        # default set to student plan, doesn't store in our accounts.txt file
+})
+
+    return log_transaction(session, '05', account_holder, new_acc_num, initial_balance)
 
 # TODO
 def delete(session) -> dict:
@@ -273,7 +338,13 @@ def delete(session) -> dict:
     account_holder = input("Enter account holder name: ").strip()
     account_number = get_account_number()
 
-    print("Account deletion done but not really")
+    for acc in session.accounts.getAccounts():
+        if acc['accountNumber'] == account_number and acc['accountName'] == account_holder:
+            session.accounts.accounts.remove(acc)
+            break
+    else:
+        print("ERROR: Account not found")
+        return None
 
     return log_transaction(session, '06', account_holder, account_number, 0)
 
@@ -296,11 +367,17 @@ def disable(session) -> dict:
     account_holder = input("Enter account holder name: ").strip()
     account_number = get_account_number()
 
-    print("Account disable done but not really")
+    for acc in session.accounts.getAccounts():
+        if acc['accountNumber'] == account_number and acc['accountName'] == account_holder:
+            acc['status'] = 'D'
+            break
+    else:
+        print("ERROR: Account not found")
+        return None
 
     return log_transaction(session, '07', account_holder, account_number, 0)
 
-# TODO
+# Note: This doesn't write to the .txt file this just toggles the variable since we don't have a field for the plan yet
 def changeplan(session) -> dict:
     """
     Change transaction payment plan for an account (ADMIN ONLY).
@@ -319,7 +396,18 @@ def changeplan(session) -> dict:
     account_holder = input("Enter account holder name: ").strip()
     account_number = get_account_number()
 
-    print("Plan change done but not really")
+    # Find the account
+    for acc in session.accounts.getAccounts():
+        if acc['accountNumber'] == account_number and acc['accountName'] == account_holder:
+            # Toggle plan
+            if acc['plan'] == 'SP':
+                acc['plan'] = 'NP'
+            else:
+                acc['plan'] = 'SP'
+            break
+    else:
+        print("ERROR: Account not found")
+        return None
 
     return log_transaction(session, '08', account_holder, account_number, 0)
 

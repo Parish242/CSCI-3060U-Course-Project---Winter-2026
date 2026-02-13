@@ -43,6 +43,7 @@ class AccountsList:
     def fetchAccounts(cls):
         # This should be recieved from the backend.
         # For now, a placeholder should be written for testing purposes.
+        # Follows the formatting of the requirements
         cls.accounts = []
         file_path = os.path.join(os.path.dirname(__file__), "..", "current_accounts.txt")
         if not os.path.exists(file_path):

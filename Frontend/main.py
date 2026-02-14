@@ -6,7 +6,6 @@ Main program for handling banking transactions through console interface.
 from utils import SessionType, TransactionLog, AccountsList
 from transactions import *
 
-
 class Session:
     """
     Manages the current banking session including user permissions, 
@@ -54,7 +53,6 @@ class Session:
         else:
             print(f"ERROR: Unknown transaction '{transactionOutput}'")
 
-
 def main():
     """
     Main entry point for the Banking System Front End.
@@ -90,7 +88,6 @@ def main():
             break
         except Exception as e:
             print(f"ERROR: Unexpected error occurred: {e}")
-
 
 if __name__ == "__main__":
     main()

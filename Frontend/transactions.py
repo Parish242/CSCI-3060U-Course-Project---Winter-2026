@@ -138,7 +138,7 @@ def withdrawal(session) -> dict:
     if not require_login(session):
         return None
 
-    print_transaction_header("Withdrawal", pending=False)
+    print_transaction_header("Withdrawal")
 
     account_holder = get_account_holder(session)
     account_number = get_account_number()
@@ -161,7 +161,6 @@ def withdrawal(session) -> dict:
 
     return log_transaction(session, '01', account_holder, account_number, amount)
 
-
 def transfer(session) -> dict:
     """
     Transfer money between two bank accounts.
@@ -175,7 +174,7 @@ def transfer(session) -> dict:
     if not require_login(session):
         return None
 
-    print_transaction_header("Transfer", pending=False)
+    print_transaction_header("Transfer")
 
     account_holder = get_account_holder(session)
     from_acc_num = get_account_number("Enter account number to transfer FROM")
@@ -209,7 +208,6 @@ def transfer(session) -> dict:
 
     # Log transaction, using source account in misc
     return log_transaction(session, '02', account_holder, to_acc_num, amount, f'{from_acc_num:05d}')
-
 
 def paybill(session) -> dict:
     """
@@ -312,7 +310,7 @@ def create(session) -> dict:
         'balance': initial_balance,
         'plan': 'SP'  
         # default set to student plan, doesn't store in our accounts.txt file
-})
+    })
 
     return log_transaction(session, '05', account_holder, new_acc_num, initial_balance)
 
@@ -372,7 +370,7 @@ def disable(session) -> dict:
 
     return log_transaction(session, '07', account_holder, account_number, 0)
 
-# Note: This doesn't write to the .txt file this just toggles the variable since we don't have a field for the plan yet
+# Note: This will eventually save to the master accounts file
 def changeplan(session) -> dict:
     """
     Change transaction payment plan for an account (ADMIN ONLY).
@@ -422,7 +420,6 @@ def require_login(session) -> bool:
         return False
     return True
 
-
 def require_admin(session) -> bool:
     """
     Check if user is logged in as admin.
@@ -442,7 +439,6 @@ def require_admin(session) -> bool:
 
     return True
 
-
 def get_account_holder(session) -> str:
     """
     Get account holder name based on session type.
@@ -457,7 +453,6 @@ def get_account_holder(session) -> str:
     if session.permissions == SessionType.ADMIN:
         return input("Enter account holder name: ").strip()
     return session.accountName
-
 
 def get_account_number(prompt: str = "Enter account number") -> int:
     """
@@ -480,7 +475,6 @@ def get_account_number(prompt: str = "Enter account number") -> int:
         except ValueError:
             print("ERROR: Invalid account number. Please enter a valid number.")
 
-
 def get_amount(prompt: str = "Enter amount") -> float:
     """
     Get and validate monetary amount from user input.
@@ -501,7 +495,6 @@ def get_amount(prompt: str = "Enter amount") -> float:
             return amount
         except ValueError:
             print("ERROR: Invalid amount. Please enter a valid number.")
-
 
 def get_company_code() -> str:
     """
@@ -526,20 +519,15 @@ def get_company_code() -> str:
             return company
         print("ERROR: Invalid company code. Please enter EC, CQ, or FI.")
 
-
-def print_transaction_header(name: str, pending: bool = True) -> None:
+def print_transaction_header(name: str) -> None:
     """
     Print standardized transaction header.
 
     Args:
         name: Transaction name
-        pending: Whether to show "TODO: Implementation pending" message
     """
     print(f"\n{name} Transaction")
     print("-" * 40)
-    if pending:
-        print("TODO: Implementation pending")
-
 
 def log_transaction(session, code: str, account_name: str, 
                    account_number: int, amount: float, misc: str = '00') -> dict:
@@ -567,7 +555,6 @@ def log_transaction(session, code: str, account_name: str,
     session.log.addTransaction(transaction)
     return transaction
 
-
 def validate_account_name(name: str) -> bool:
     """
     Validate account holder name constraints.
@@ -587,7 +574,6 @@ def validate_account_name(name: str) -> bool:
         return False
 
     return True
-
 
 def validate_balance(balance: float) -> bool:
     """

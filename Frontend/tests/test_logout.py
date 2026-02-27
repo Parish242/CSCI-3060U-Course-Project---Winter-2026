@@ -11,7 +11,7 @@ from utils import SessionType, AccountsList
 def test_logout_transaction_logged(monkeypatch, admin_session, mock_input):
     mock_input("John Doe", "1")
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     logout(admin_session)
@@ -24,7 +24,7 @@ def test_logout_transaction_logged(monkeypatch, admin_session, mock_input):
 def test_valid_logout_transaction(monkeypatch, admin_session, mock_input, capsys):
     mock_input("John Doe", "1")
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     result = logout(admin_session)
@@ -35,7 +35,7 @@ def test_valid_logout_transaction(monkeypatch, admin_session, mock_input, capsys
 # invalidLogout: attempt to logout without having logged in
 def test_invalid_logout_transaction(monkeypatch, new_session, capsys):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     result = logout(new_session)
@@ -46,7 +46,7 @@ def test_invalid_logout_transaction(monkeypatch, new_session, capsys):
 # validTransactionAfterLogout: attempt login transaction after logout
 def test_login_after_logout(monkeypatch, standard_session):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     result = logout(standard_session)
@@ -66,7 +66,7 @@ def test_login_after_logout(monkeypatch, standard_session):
 # consecutiveUser: confirm information from session logout is not carried over to new session login
 def test_new_session_info_after_logout(monkeypatch, standard_session):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     account_balance_initial = next(a for a in AccountsList.accounts if a["accountNumber"] == 1)["balance"]
@@ -90,7 +90,7 @@ def test_new_session_info_after_logout(monkeypatch, standard_session):
 # invalidTransactionAfterLogout: confirm every transaction other than login is rejected and met with an error
 def test_withdrawal_after_logout_(monkeypatch, standard_session, capsys):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     logout(standard_session)
@@ -100,7 +100,7 @@ def test_withdrawal_after_logout_(monkeypatch, standard_session, capsys):
 
 def test_transfer_after_logout_(monkeypatch, standard_session, capsys):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     logout(standard_session)
@@ -110,7 +110,7 @@ def test_transfer_after_logout_(monkeypatch, standard_session, capsys):
 
 def test_paybill_after_logout_(monkeypatch, standard_session, capsys):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     logout(standard_session)
@@ -120,7 +120,7 @@ def test_paybill_after_logout_(monkeypatch, standard_session, capsys):
 
 def test_deposit_after_logout_(monkeypatch, standard_session, capsys):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     logout(standard_session)
@@ -130,7 +130,7 @@ def test_deposit_after_logout_(monkeypatch, standard_session, capsys):
 
 def test_create_after_logout_(monkeypatch, standard_session, capsys):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     logout(standard_session)
@@ -140,7 +140,7 @@ def test_create_after_logout_(monkeypatch, standard_session, capsys):
 
 def test_delete_after_logout_(monkeypatch, standard_session, capsys):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     logout(standard_session)
@@ -150,7 +150,7 @@ def test_delete_after_logout_(monkeypatch, standard_session, capsys):
 
 def test_disable_after_logout_(monkeypatch, standard_session, capsys):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     logout(standard_session)
@@ -160,7 +160,7 @@ def test_disable_after_logout_(monkeypatch, standard_session, capsys):
 
 def test_changePlan_after_logout_(monkeypatch, standard_session, capsys):
     monkeypatch.setattr(
-           "transactions.TransactionLog.writeTransactionFile",
+           "utils.TransactionLog.writeTransactionFile",
            lambda self: True
        )
     logout(standard_session)

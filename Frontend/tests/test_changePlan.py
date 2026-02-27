@@ -50,7 +50,7 @@ def test_valid_disable_account(admin_session, mock_input):
     result = changeplan(admin_session)
 
     assert result is not None
-    assert result["code"] == "8"
+    assert result["code"] == "08"
 
     account = next(a for a in AccountsList.accounts if a["accountNumber"] == 2)
     assert account["plan"] == "NP"

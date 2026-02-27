@@ -122,7 +122,13 @@ def mock_input(monkeypatch):
     """
     def _mock(*values):
         it = iter(values)
-        monkeypatch.setattr("builtins.input", lambda _: next(it))
+        def _get_next_input(everything_breaks_if_this_parameter_isnt_here=None):
+            try:
+                return next(it)
+            except StopIteration:
+                raise Exception("No more inputs provided in test.")
+
+        monkeypatch.setattr("builtins.input", _get_next_input)
     return _mock
 
 

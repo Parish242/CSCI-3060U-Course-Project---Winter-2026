@@ -4,6 +4,7 @@
 
 from transactions import deposit, withdrawal
 from utils import AccountsList
+import pytest
 
 # validDepositAccount: account owned by the logged-in user is accepted
 def test_valid_deposit_account(standard_session, mock_input):
@@ -19,14 +20,16 @@ def test_invalid_deposit_account(standard_session, mock_input, capsys):
 # zeroDollarDeposit: deposit totalling $0.00 is rejected
 def test_zero_dollar_deposit(standard_session, mock_input, capsys):
     mock_input("1", "0.00")
-    assert deposit(standard_session) is None
-    assert "ERROR: Deposit amount must be greater than 0.00." in capsys.readouterr().out
+    with pytest.raises(Exception):
+        deposit(standard_session)
+    assert "ERROR: Amount must be greater than $0.00" in capsys.readouterr().out
 
 # negativeDollarDeposit: deposit totalling a negative value is rejected
 def test_negative_dollar_deposit(standard_session, mock_input, capsys):
     mock_input("1", "-1.00")
-    assert deposit(standard_session) is None
-    assert "ERROR: Deposit amount must be greater than 0.00." in capsys.readouterr().out
+    with pytest.raises(Exception):
+        deposit(standard_session)
+    assert "ERROR: Amount must be greater than $0.00" in capsys.readouterr().out
 
 # savesDepositInfo: successful deposit is saved to the transaction log
 def test_saves_deposit_info(standard_session, mock_input):

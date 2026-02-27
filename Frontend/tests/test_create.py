@@ -11,6 +11,7 @@ Tests not implemented (found to not be applicable to actual build):
 
 from transactions import create, deposit
 from utils import AccountsList
+import pytest
 
 # standardCreateAccount: Standard session is denied from performing transaction
 def test_standard_create_account(standard_session, capsys):
@@ -32,8 +33,9 @@ def test_above_limit_account_balance(admin_session, mock_input, capsys):
 # negativeAccountBalance: Balance under $0.00 is rejected
 def test_negative_account_balance(admin_session, mock_input, capsys):
     mock_input("EVE", "-1.00")
-    assert create(admin_session) is None
-    assert "ERROR: Account balance cannot be negative" in capsys.readouterr().out
+    with pytest.raises(Exception):
+        create(admin_session)
+    assert "ERROR: Amount must be greater than $0.00" in capsys.readouterr().out
 
 # savesCreateInfo: Successful create is saved to the transaction log
 def test_saves_create_info(admin_session, mock_input):

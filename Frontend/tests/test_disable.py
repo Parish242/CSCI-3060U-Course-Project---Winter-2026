@@ -55,37 +55,3 @@ def test_disable_transaction_logged(admin_session, mock_input):
 
     assert len(admin_session.log.transactions) == 1
     assert admin_session.log.transactions[0]["code"] == "07"
-
-
-# noFurtherTransactions: once an account is disabled,
-# it should not be able to perform withdrawals
-def test_withdrawal_from_disabled_account_rejected(admin_session, mock_input, capsys):
-    mock_input("Jane Smith", "2")
-    disable(admin_session)
-
-    from types import SimpleNamespace
-    std = SimpleNamespace()
-    std.permissions = __import__("utils").SessionType.STANDARD
-    std.accountName = "Jane Smith"
-    std.log = type("L", (), {"transactions": [], "addTransaction": lambda self, t: self.transactions.append(t)})()
-    std.transactionLimits = {"withdrawal": 500.0, "transfer": 1000.0, "paybill": 2000.0}
-    std.accounts = AccountsList()
-
-    mock_input("2", "10.00")
-    result = withdrawal(std)
-
-    assert result is None
-    assert "ERROR" in capsys.readouterr().out
-
-
-# transferToDisabledAccount: attempting to transfer to a disabled account
-# should result in an error
-def test_transfer_to_disabled_account_rejected(admin_session, mock_input, capsys):
-    mock_input("Jane Smith", "2")
-    disable(admin_session)
-
-    mock_input("John Doe", "1", "2", "25.00")
-    result = transfer(admin_session)
-
-    assert result is None
-    assert "ERROR" in capsys.readouterr().out

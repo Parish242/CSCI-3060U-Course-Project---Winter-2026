@@ -1,6 +1,8 @@
 """
 Shared pytest fixtures and configuration for the Banking System Front End tests.
 
+To run tests, ensure pytest package is installed and execute `pytest` in terminal in the source directory. This will automatically discover and run all test files matching the pattern `test_*.py` in the `tests/` directory.
+
 """
 
 import sys

@@ -1,6 +1,32 @@
 """
 CSCI 3060U Banking System - Front End
-Main program for handling banking transactions through console interface.
+======================================
+Overview:
+    This is the Front End of the Banking System. It accepts user commands
+    from the console and processes banking transactions (login, logout,
+    withdrawal, deposit, transfer, paybill, create, delete, disable, and
+    changeplan). Validated transactions are recorded in a transaction log
+    that is written to a file on logout for back-end processing.
+
+Input files:
+    - current_accounts.txt: The current bank accounts file, located one
+      directory above this file (../current_accounts.txt). It is read at
+      login to load all active accounts into memory.
+      Format per line: NNNNN NAME(20) STATUS BALANCE(8)
+        e.g. 00001ALICE               A01000.00
+
+Output files:
+    - <timestamp>.txt: A transaction log file written to the working
+      directory on logout. Each line represents one transaction in the
+      format: CODE NAME(20) NNNNN AMOUNT(8) MISC
+        e.g. 04 ALICE                00001 00020.00 00
+
+How to run:
+    From the Frontend/ directory, run:
+        python main.py [current_accounts_file]
+    If no accounts file argument is provided, the program defaults to
+    ../current_accounts.txt. Input can be piped from a file:
+        python main.py < input.txt
 """
 
 from utils import SessionType, TransactionLog, AccountsList

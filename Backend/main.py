@@ -20,9 +20,11 @@ def parse_arguments():
 # Sets up the accounts and transactionns
 def main():
     transactions_file, current_file, master_file = parse_arguments()
+
     accounts_list = AccountsList(current_file=current_file, master_file=master_file)
     accounts_list.read_old_bank_accounts()
     accounts_list.read_old_master_accounts()
+
     records = TransactionsList(transactions_file)
     records.read_merged_transaction_file()
 
@@ -57,9 +59,10 @@ def main():
         else:
             pass  # TODO: handle unknown code
 
-    # TODO: - Write updated accounts back after *******************
-    # accounts_list.write_new_current_accounts()
-    # accounts_list.write_new_master_accounts()
+    # Write updated accounts back to files
+    accounts_list.write_new_current_accounts()
+    accounts_list.write_new_master_accounts()
+
 
 if __name__ == "__main__":
     main()

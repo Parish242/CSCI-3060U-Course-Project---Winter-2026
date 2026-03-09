@@ -57,7 +57,7 @@ def main():
         else:
             pass  # TODO: handle unknown code
 
-    # TBD - Write updated accounts back after *******************
+    # TODO: - Write updated accounts back after *******************
     # accounts_list.write_new_current_accounts()
     # accounts_list.write_new_master_accounts()
 

@@ -40,19 +40,54 @@ class AccountsList:
                     })
                 # TODO: handle broken lines with errors and check that I did this right
 
-    def read_old_master_accounts(self, file_path: Optional[str] = None):
-        path = file_path or self.master_file
-        self.master_accounts = []
-        # TODO: Implement parsing similar or current accounts
-        pass
+def read_old_master_accounts(self, file_path: Optional[str] = None):
+    path = file_path or self.master_file
+    self.master_accounts = []
 
-    def write_new_current_accounts(self, file_path: Optional[str] = None):
-        # TODO: Make the function
-        pass
+    with open(path, "r") as f:
+        for line in f:
+            if line.strip() == "":
+                continue
 
-    def write_new_master_accounts(self, file_path: Optional[str] = None):
-        # TODO: Make the function
-        pass
+            account = {
+                "accountNumber": line[0:5].strip(),
+                "accountName": line[6:26].strip(),
+                "status": line[27:28].strip(),
+                "balance": float(line[29:39].strip()),
+                "plan": line[40:42].strip()
+            }
+
+            self.master_accounts.append(account)
+
+
+def write_new_current_accounts(self, file_path: Optional[str] = None):
+    path = file_path or self.current_file
+
+    with open(path, "w") as f:
+        for acc in self.current_accounts:
+            line = (
+                f"{acc['accountNumber'].zfill(5)} "
+                f"{acc['accountName']:<20} "
+                f"{acc['status']} "
+                f"{acc['balance']:010.2f} "
+                f"{acc['plan']}\n"
+            )
+            f.write(line)
+
+
+def write_new_master_accounts(self, file_path: Optional[str] = None):
+    path = file_path or self.master_file
+
+    with open(path, "w") as f:
+        for acc in self.master_accounts:
+            line = (
+                f"{acc['accountNumber'].zfill(5)} "
+                f"{acc['accountName']:<20} "
+                f"{acc['status']} "
+                f"{acc['balance']:010.2f} "
+                f"{acc['plan']}\n"
+            )
+            f.write(line)
 
     def get_account_by_id(self, account_id: str) -> Optional[Dict]:
         key = str(account_id).zfill(5)
@@ -61,13 +96,9 @@ class AccountsList:
                 return a
         return None
 
-    def performTransaction(self, result: Dict):
-        # TODO: Make the transaction history
-        pass
-
 
 class TransactionsList:
-# Read merged transaction file into a list
+# Reads merged transaction file into a list
     def __init__(self, file_path: str):
         self.file_path = file_path
         self.transactions: List[Dict] = []
@@ -88,7 +119,7 @@ class TransactionsList:
                         'money': float(parts[-2]),
                         'misc': parts[-1] if len(parts) >= 5 else ""
                     })
-                # TODO: Handle broken lines with errors
+                # TODO: handle broken lines with errors and check that I did this right
 
     def get_iterator(self):
         return iter(self.transactions)

@@ -1,0 +1,6 @@
+00001 John Doe             A 0001000.00 NP
+00002 Jane Smith           A 0002500.00 NP
+00003 Bob Johnson          A 0000750.00 NP
+00004 Alice Williams       D 0000100.00 NP
+00005 Charlie Brown        A 0005000.00 NP
+00000 END_OF_FILE          A 0000000.00 NP

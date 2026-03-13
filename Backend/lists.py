@@ -11,23 +11,22 @@ TransactionsList loads the merged transaction file produced by the Front End
 and exposes the records as an iterator for the main processing loop.
 
 Current bank accounts file format (one record per line):
-    NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPPPP PLAN
+    NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP
     NNNNN – 5-digit account number
     AAAAAAAAAAAAAAAAAAAA – account holder name (up to 20 chars)
     S     – status: A (active) or D (disabled)
-    PPPPPPPPPP – balance (10 chars, 2 decimal places)
-    PLAN  – payment plan: SP (student) or NP (non-student)
+    PPPPPPPP – balance (8 chars, 2 decimal places)
+    (no payment-plan field in current accounts)
 
-Master bank accounts file format matches the current accounts file but is the
-authoritative record used by the Back End (balances and plan are read from
-here when it exists).
+Master bank accounts file format adds a trailing two-character payment plan:
+    NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP TT
 
 Merged transaction file format (one record per line):
-    CC AAAAAAAAAAAAAAAAAAAA NNNNN PPPPPPPPPP MM
+    CC AAAAAAAAAAAAAAAAAAAA NNNNN PPPPPPPP MM
     CC    – 2-digit transaction code
     AAAAA… – account holder name (up to 20 chars)
     NNNNN – 5-digit account number
-    PPPPP… – money amount (up to 10 chars)
+    PPPPP… – money amount (8 chars)
     MM    – miscellaneous field (2 chars, e.g. first 2 digits of FROM account)
 """
 
@@ -58,10 +57,14 @@ class AccountsList:
         """
         Read the current bank accounts file into self.current_accounts.
 
-        Each non-sentinel line is parsed into a dict with keys:
-            accountNumber, accountName, status, balance, plan.
+        Expected record format:
+            NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP
 
-        The last field is optional; accounts without a plan field default to NP.
+        Parses each non-sentinel line into a dict with keys: accountNumber,
+        accountName, status, balance, plan.
+
+        Current accounts lines do not carry payment plan, so plan defaults
+        to NP and may later be overridden by master account data.
 
         Args:
             file_path: Override the default current accounts file path.
@@ -73,41 +76,32 @@ class AccountsList:
             return
         with open(path, "r") as fh:
             for line in fh:
-                parts = line.strip().split()
-                if len(parts) >= 4:
-                    acc_num = parts[0]
-                    if acc_num == "00000":  # END_OF_FILE sentinel
-                        continue
-                    if parts[-1] in ('SP', 'NP'):
-                        # Plan field present: NAME fields are everything between
-                        # account number and the trailing status/balance/plan trio.
-                        name = " ".join(parts[1:-3])
-                        status = parts[-3]
-                        balance = float(parts[-2])
-                        plan = parts[-1]
-                    else:
-                        # No plan field: NAME fields are between account number
-                        # and the trailing status/balance pair.
-                        name = " ".join(parts[1:-2])
-                        status = parts[-2]
-                        balance = float(parts[-1])
-                        plan = "NP"
-                    self.current_accounts.append({
-                        'accountNumber': str(acc_num).zfill(5),
-                        'accountName': name,
-                        'status': status,
-                        'balance': balance,
-                        'plan': plan
-                    })
+                line = line.rstrip("\n")
+                if len(line) < 37:
+                    continue
+
+                acc_num = line[0:5].strip()
+                if acc_num == "00000":  # END_OF_FILE sentinel
+                    break
+
+                self.current_accounts.append({
+                    "accountNumber": str(acc_num).zfill(5),
+                    "accountName": line[6:26].rstrip(),
+                    "status": line[27:28].strip(),
+                    "balance": float(line[29:37].strip()),
+                    "plan": "NP",
+                })
                 # TODO: handle broken lines with errors and check that I did this right
 
     def read_old_master_accounts(self, file_path: Optional[str] = None):
         """
         Read the master bank accounts file into self.master_accounts.
 
-        Uses fixed-position parsing (columns defined by the spec) so account
-        names that contain spaces are handled correctly. Stops at the
-        END_OF_FILE (00000) sentinel line.
+        Expected record format:
+            NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP TT
+
+        Uses fixed-position parsing so account names with spaces are handled
+        correctly. Stops at the END_OF_FILE (00000) sentinel line.
 
         Args:
             file_path: Override the default master accounts file path.
@@ -119,6 +113,7 @@ class AccountsList:
             return
         with open(path, "r") as f:
             for line in f:
+                line = line.rstrip("\n")
                 if line.strip() == "":
                     continue
                 if line[0:5].strip() == "00000":  # END_OF_FILE sentinel
@@ -127,17 +122,20 @@ class AccountsList:
                     "accountNumber": line[0:5].strip(),
                     "accountName": line[6:26].strip(),
                     "status": line[27:28].strip(),
-                    "balance": float(line[29:39].strip()),
-                    "plan": line[40:42].strip()
+                    "balance": float(line[29:37].strip()),
+                    "plan": line[38:40].strip() if len(line) >= 40 else "NP",
                 }
                 self.master_accounts.append(account)
+
+        # Master accounts are the authoritative source for Back End processing.
+        self.current_accounts = [dict(acc) for acc in self.master_accounts]
 
     def write_new_current_accounts(self, file_path: Optional[str] = None):
         """
         Write self.current_accounts to the current accounts file.
 
         Produces one line per account in the format:
-            NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPPPP PLAN
+            NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP
 
         Args:
             file_path: Override the default current accounts file path.
@@ -150,17 +148,17 @@ class AccountsList:
                     f"{acc['accountNumber'].zfill(5)} "
                     f"{acc['accountName']:<20} "
                     f"{acc['status']} "
-                    f"{acc['balance']:010.2f} "
-                    f"{acc['plan']}\n"
+                    f"{acc['balance']:08.2f}\n"
                 )
                 f.write(line)
+            f.write("00000 END_OF_FILE          A 00000.00\n")
 
     def write_new_master_accounts(self, file_path: Optional[str] = None):
         """
-        Write self.master_accounts to the master accounts file.
+        Write the updated account list to the master accounts file.
 
-        Produces one line per account in the same format as the current
-        accounts file so the Back End can read it on the next run.
+        Produces one line per account in the format:
+            NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP TT
 
         Args:
             file_path: Override the default master accounts file path.
@@ -168,13 +166,13 @@ class AccountsList:
         path = file_path or self.master_file
 
         with open(path, "w") as f:
-            for acc in self.master_accounts:
+            for acc in self.current_accounts:
                 line = (
                     f"{acc['accountNumber'].zfill(5)} "
                     f"{acc['accountName']:<20} "
                     f"{acc['status']} "
-                    f"{acc['balance']:010.2f} "
-                    f"{acc['plan']}\n"
+                    f"{acc['balance']:08.2f} "
+                    f"{acc.get('plan', 'NP')}\n"
                 )
                 f.write(line)
 

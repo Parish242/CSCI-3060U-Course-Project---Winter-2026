@@ -5,3 +5,5 @@ __pycache__
 .venv
 
 !current_accounts.txt
+!master_accounts.txt
+Project Outline.pdf

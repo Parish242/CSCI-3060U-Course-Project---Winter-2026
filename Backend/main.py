@@ -1,63 +1,83 @@
 """
 backend/main.py
-TBD - DO FULL FILE COMMENT
+
+Banking System Back End - main entry point.
+
+Reads the old master bank accounts file and a merged bank account transaction
+file, applies every transaction to the account records (enforcing business
+constraints), then writes out:
+  • a new master bank accounts file (balances, plans, and transaction counts updated)
+  • a new current bank accounts file (for tomorrow's Front End sessions)
+
+Usage:
+    python main.py [merged_transactions] [current_accounts] [master_accounts]
+
+All three file-path arguments are optional; reasonable defaults relative to
+the repository root are used when they are not supplied.
+
+Input files:
+    merged_transactions  - concatenation of one or more Front End transaction
+                           files, ended with an end-of-session (00) record.
+    current_accounts     - current bank accounts file written by the previous
+                           Back End run (used as a fallback if no master exists).
+    master_accounts      - master bank accounts file written by the previous
+                           Back End run (authoritative source for balances,
+                           plans, and transaction counts).
+
+Output files:
+    master_accounts      - updated master file (overwrites the input).
+    current_accounts     - updated current accounts file for the Front End.
 """
+
 import sys
 import os
 from lists import AccountsList, TransactionsList
-import transactions as transactions_backend
 
-# Reads command line arguments for the transaction and account files
-def parse_arguments():
-    args = sys.argv[1:]
-    transactions_file = args[0] if len(args) >= 1 else os.path.join("..", "merged_transactions.txt")
-    current_file = args[1] if len(args) >= 2 else os.path.join("..", "current_accounts.txt")
-    master_file = args[2] if len(args) >= 3 else os.path.join("..", "master_accounts.txt")
+
+def parse_arguments() -> tuple[str, str, str]:
+    """
+    Parse command-line arguments and return the three file paths.
+
+    Returns:
+        Tuple of (transactions_file, current_file, master_file).
+    """
+    args     = sys.argv[1:]
+    base_dir = os.path.join(os.path.dirname(__file__), "..")
+    transactions_file = args[0] if len(args) >= 1 else os.path.join(base_dir, "merged_transactions.txt")
+    current_file      = args[1] if len(args) >= 2 else os.path.join(base_dir, "current_accounts.txt")
+    master_file       = args[2] if len(args) >= 3 else os.path.join(base_dir, "master_accounts.txt")
     return transactions_file, current_file, master_file
 
-# Sets up the accounts and transactionns
-def main():
+
+def main() -> None:
+    """
+    Main Back End processing loop.
+
+    1. Load account records from the master (and current) accounts files.
+    2. Load all transactions from the merged transaction file.
+    3. Apply each transaction in order via AccountsList.perform_transaction().
+    4. Write the updated accounts to the new master and current account files.
+    """
     transactions_file, current_file, master_file = parse_arguments()
+
+    # Load bank accounts from the current and master accounts files.
     accounts_list = AccountsList(current_file=current_file, master_file=master_file)
     accounts_list.read_old_bank_accounts()
     accounts_list.read_old_master_accounts()
-    records = TransactionsList(transactions_file)
-    records.read_merged_transaction_file()
 
-    for record in records.get_iterator():
-        code = record.get('code', '').zfill(2)
-        account_name = record.get('accountName', '').strip()
-        account_number = record.get('accountNumber', '').zfill(5)
-        amount = float(record.get('money', 0.0))
-        misc = record.get('misc', '')
+    # Load the merged transaction file.
+    transaction_records = TransactionsList(transactions_file)
+    transaction_records.read_merged_transaction_file()
 
-        # Transaction types - TBD***********
-        if code == '01':
-            pass  # TODO: implement withdrawal
-        elif code == '02':
-            pass  # TODO: implement transfer
-        elif code == '03':
-            pass  # TODO: implement paybill
-        elif code == '04':
-            pass  # TODO: implement deposit
-        elif code == '05':
-            pass  # TODO: implement create account
-        elif code == '06':
-            pass  # TODO: implement delete account
-        elif code == '07':
-            pass  # TODO: implement disable account
-        elif code == '08':
-            pass  # TODO: implement change plan
-        elif code == '09':
-            pass  # TODO: implement login
-        elif code == '10':
-            pass  # TODO: implement logout
-        else:
-            pass  # TODO: handle unknown code
+    # Apply every transaction in order; constraint errors are printed to the terminal.
+    for transaction in transaction_records.get_iterator():
+        accounts_list.perform_transaction(transaction)
 
-    # Write updated accounts back to files
-    accounts_list.write_new_current_accounts()
+    # Write the updated accounts to both output files.
     accounts_list.write_new_master_accounts()
+    accounts_list.write_new_current_accounts()
+
 
 if __name__ == "__main__":
     main()
+

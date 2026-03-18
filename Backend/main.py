@@ -72,10 +72,12 @@ def main() -> None:
     # Apply every transaction in order; constraint errors are printed to the terminal.
     for transaction in transaction_records.get_iterator():
         accounts_list.perform_transaction(transaction)
+        print("Transactions Applied.")
 
     # Write the updated accounts to both output files.
     accounts_list.write_new_master_accounts()
     accounts_list.write_new_current_accounts()
+    print("New Account Files Written.")
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ Current bank accounts file format (one record per line):
     (no payment-plan field in current accounts)
 
 Master bank accounts file format adds a trailing two-character payment plan:
-    NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP TT
+    NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP MM TTTT
 
 Merged transaction file format (one record per line):
     CC AAAAAAAAAAAAAAAAAAAA NNNNN PPPPPPPP MM
@@ -89,7 +89,7 @@ class AccountsList:
                     "accountName": line[6:26].rstrip(),
                     "status": line[27:28].strip(),
                     "balance": float(line[29:37].strip()),
-                    "plan": "NP",
+                    "plan": "NP"
                 })
                 # TODO: handle broken lines with errors and check that I did this right
 
@@ -98,7 +98,7 @@ class AccountsList:
         Read the master bank accounts file into self.master_accounts.
 
         Expected record format:
-            NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP TT
+            NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP MM TTTT
 
         Uses fixed-position parsing so account names with spaces are handled
         correctly. Stops at the END_OF_FILE (00000) sentinel line.
@@ -124,6 +124,7 @@ class AccountsList:
                     "status": line[27:28].strip(),
                     "balance": float(line[29:37].strip()),
                     "plan": line[38:40].strip() if len(line) >= 40 else "NP",
+                    "transactionCount" : int(line[41:45].strip())
                 }
                 self.master_accounts.append(account)
 
@@ -172,7 +173,8 @@ class AccountsList:
                     f"{acc['accountName']:<20} "
                     f"{acc['status']} "
                     f"{acc['balance']:08.2f} "
-                    f"{acc.get('plan', 'NP')}\n"
+                    f"{acc.get('plan', 'NP')} "
+                    f"{acc['transactionCount']:04.0f}\n"
                 )
                 f.write(line)
 

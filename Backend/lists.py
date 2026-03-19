@@ -53,46 +53,6 @@ class AccountsList:
         self.current_accounts: List[Dict] = []
         self.master_accounts:  List[Dict] = []
 
-    def read_old_bank_accounts(self, file_path: Optional[str] = None):
-        """
-        Read the current bank accounts file into self.current_accounts.
-
-        Expected record format:
-            NNNNN AAAAAAAAAAAAAAAAAAAA S PPPPPPPP
-
-        Parses each non-sentinel line into a dict with keys: accountNumber,
-        accountName, status, balance, plan.
-
-        Current accounts lines do not carry payment plan, so plan defaults
-        to NP and may later be overridden by master account data.
-
-        Args:
-            file_path: Override the default current accounts file path.
-        """
-        path = file_path or self.current_file
-        self.current_accounts = []
-        if not os.path.exists(path):
-            print("Warning: current accounts file not found:", path)
-            return
-        with open(path, "r") as fh:
-            for line in fh:
-                line = line.rstrip("\n")
-                if len(line) < 37:
-                    continue
-
-                acc_num = line[0:5].strip()
-                if acc_num == "00000":  # END_OF_FILE sentinel
-                    break
-
-                self.current_accounts.append({
-                    "accountNumber": str(acc_num).zfill(5),
-                    "accountName": line[6:26].rstrip(),
-                    "status": line[27:28].strip(),
-                    "balance": float(line[29:37].strip()),
-                    "plan": "NP"
-                })
-                # TODO: handle broken lines with errors and check that I did this right
-
     def read_old_master_accounts(self, file_path: Optional[str] = None):
         """
         Read the master bank accounts file into self.master_accounts.

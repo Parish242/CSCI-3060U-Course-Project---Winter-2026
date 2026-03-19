@@ -62,7 +62,6 @@ def main() -> None:
 
     # Load bank accounts from the current and master accounts files.
     accounts_list = AccountsList(current_file=current_file, master_file=master_file)
-    accounts_list.read_old_bank_accounts()
     accounts_list.read_old_master_accounts()
 
     # Load the merged transaction file.

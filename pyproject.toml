@@ -6,6 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "banking-system"
 version = "0.1.0"
 
+[tool.setuptools]
+packages = []
+
 [tool.pytest.ini_options]
 testpaths = ["Frontend/tests"]
 python_files = ["test_*.py"]

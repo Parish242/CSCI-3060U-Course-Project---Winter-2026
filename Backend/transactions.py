@@ -41,10 +41,7 @@ TRANSACTION_FEE: dict[str, float] = {
 }
 
 
-# ---------------------------------------------------------------------------
 # Internal helper
-# ---------------------------------------------------------------------------
-
 def _charge_fee(account: dict) -> bool:
     """
     Deduct the per-transaction fee from account['balance'] based on the
@@ -68,10 +65,7 @@ def _charge_fee(account: dict) -> bool:
     return True
 
 
-# ---------------------------------------------------------------------------
 # Transaction handlers
-# ---------------------------------------------------------------------------
-
 def withdrawal(transaction: dict, accounts: AccountsList) -> bool:
     """
     Apply a withdrawal transaction (code 01).

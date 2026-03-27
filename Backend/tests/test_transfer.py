@@ -30,6 +30,14 @@ def test_T5_FROM_insufficient_balance(accounts_list, capsys):
 def test_T6_boundary_exact_from_depletion(accounts_list):
     transaction = {'code': '01', 'accountName': 'Bob Johnson', 'accountNumber': '00002', 'money': 749.90, 'misc': ''}
     assert transfer(transaction, accounts_list) is True
+    assert accounts_list.current_accounts[2]["balance"] == pytest.approx(0.00)
+    assert accounts_list.current_accounts[1]["balance"] == pytest.approx(3249.90)
+
+def test_T7_successful_transfer_np(accounts_list):
+    transaction = {'code': '01', 'accountName': 'John Doe', 'accountNumber': '00002', 'money': 200, 'misc': ''}
+    assert transfer(transaction, accounts_list) is True
+    assert accounts_list.current_accounts[0]["balance"] == pytest.approx(799.90)
+    assert accounts_list.current_accounts[1]["balance"] == pytest.approx(2700.00)
 
 def test_T7_successful_transfer_np(accounts_list):
     transaction = {'code': '01', 'accountName': 'John Doe', 'accountNumber': '00002', 'money': 200, 'misc': ''}
@@ -43,11 +51,17 @@ def test_T8_loop_coverage_0_runs(empty_accounts_list, capsys):
 def test_T9_loop_coverage_1_run(accounts_list):
     transaction = {'code': '01', 'accountName': 'John Doe', 'accountNumber': '00003', 'money': 50, 'misc': ''}
     assert transfer(transaction, accounts_list) is True
+    assert accounts_list.current_accounts[0]["balance"] == pytest.approx(949.90)
+    assert accounts_list.current_accounts[2]["balance"] == pytest.approx(800.00)
 
 def test_T10_loop_coverage_2_runs(accounts_list):
     transaction = {'code': '01', 'accountName': 'Jane Smith', 'accountNumber': '00003', 'money': 50, 'misc': ''}
     assert transfer(transaction, accounts_list) is True
+    assert accounts_list.current_accounts[1]["balance"] == pytest.approx(2449.90)
+    assert accounts_list.current_accounts[2]["balance"] == pytest.approx(800.00)
 
 def test_T11_loop_coverage_many_runs(accounts_list):
     transaction = {'code': '01', 'accountName': 'Charlie Brown', 'accountNumber': '00003', 'money': 50, 'misc': ''}
     assert transfer(transaction, accounts_list) is True
+    assert accounts_list.current_accounts[4]["balance"] == pytest.approx(4949.95)
+    assert accounts_list.current_accounts[2]["balance"] == pytest.approx(800.00)

@@ -27,7 +27,7 @@ jobs:
         run: python -m pip install pytest .
 
       - name: Run frontend tests
-        run: pytest frontend/
+        run: pytest Frontend/
 
       - name: Run backend tests
-        run: pytest backend/
+        run: pytest Backend/

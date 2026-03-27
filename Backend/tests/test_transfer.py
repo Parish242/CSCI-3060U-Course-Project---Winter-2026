@@ -38,7 +38,7 @@ def test_T7_successful_transfer_np(accounts_list):
 def test_T8_loop_coverage_0_runs(empty_accounts_list, capsys):
     transaction = {'code': '01', 'accountName': 'John Doe', 'accountNumber': '00003', 'money': 50, 'misc': ''}
     assert transfer(transaction, empty_accounts_list) is False
-    assert f"ERROR: Transfer failed – no active account found for holder '{transaction['accountName']}' to transfer from." in capsys.readouterr().out
+    assert f"ERROR: Transfer failed – TO account {transaction['accountNumber']} not found." in capsys.readouterr().out
 
 def test_T9_loop_coverage_1_run(accounts_list):
     transaction = {'code': '01', 'accountName': 'John Doe', 'accountNumber': '00003', 'money': 50, 'misc': ''}

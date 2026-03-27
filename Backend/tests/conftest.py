@@ -1,8 +1,8 @@
 """
 Shared pytest fixtures and configuration for the Banking System Back End tests.
 
-To run tests, ensure pytest package is installed and execute `pytest` in terminal in the source directory. This will automatically discover and run all test files matching the pattern `test_*.py` in the `tests/` directory.
-
+To run tests, ensure pytest package is installed and execute `pytest` in terminal in the source directory.
+This will automatically discover and run all test files matching the pattern `test_*.py` in the `tests/` directory.
 """
 
 import sys
@@ -31,15 +31,17 @@ def accounts_list():
     Since this wasn't written as a singleton, this must be
     passed in as an argument (unlike in the frontend tests).
     """
-    list = AccountsList()
-    list.current_accounts = [dict(acc) for acc in SAMPLE_ACCOUNTS]
-    yield list
-    AccountsList.current_accounts = []
+    accounts = AccountsList()
+    accounts.current_accounts = [dict(acc) for acc in SAMPLE_ACCOUNTS]
+    yield accounts
+    accounts.current_accounts = []
 
 @pytest.fixture
 def empty_accounts_list():
     """
-    Empty accounts list for loop coverage (0 runs)
+    Empty accounts list for loop coverage (0 runs).
     """
-    list = AccountsList()
-    yield list
+    accounts = AccountsList()
+    accounts.current_accounts = []
+    yield accounts
+    accounts.current_accounts = []

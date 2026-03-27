@@ -34,3 +34,20 @@ def test_T6_boundary_exact_from_depletion(accounts_list):
 def test_T7_successful_transfer_np(accounts_list):
     transaction = {'code': '01', 'accountName': 'John Doe', 'accountNumber': '00002', 'money': 200, 'misc': ''}
     assert transfer(transaction, accounts_list) is True
+
+def test_T8_loop_coverage_0_runs(empty_accounts_list, capsys):
+    transaction = {'code': '01', 'accountName': 'John Doe', 'accountNumber': '00003', 'money': 50, 'misc': ''}
+    assert transfer(transaction, empty_accounts_list) is False
+    assert f"ERROR: Transfer failed – no active account found for holder '{transaction['accountName']}' to transfer from." in capsys.readouterr().out
+
+def test_T9_loop_coverage_0_runs(accounts_list):
+    transaction = {'code': '01', 'accountName': 'John Doe', 'accountNumber': '00003', 'money': 50, 'misc': ''}
+    assert transfer(transaction, accounts_list) is True
+
+def test_T10_loop_coverage_0_runs(accounts_list):
+    transaction = {'code': '01', 'accountName': 'Jane Smith', 'accountNumber': '00003', 'money': 50, 'misc': ''}
+    assert transfer(transaction, accounts_list) is True
+
+def test_T11_loop_coverage_0_runs(accounts_list):
+    transaction = {'code': '01', 'accountName': 'Charlie Brown', 'accountNumber': '00003', 'money': 50, 'misc': ''}
+    assert transfer(transaction, accounts_list) is True

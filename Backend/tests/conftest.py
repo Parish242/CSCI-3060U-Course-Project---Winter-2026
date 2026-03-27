@@ -35,3 +35,11 @@ def accounts_list():
     list.current_accounts = [dict(acc) for acc in SAMPLE_ACCOUNTS]
     yield list
     AccountsList.current_accounts = []
+
+@pytest.fixture
+def empty_accounts_list():
+    """
+    Empty accounts list for loop coverage (0 runs)
+    """
+    list = AccountsList()
+    yield list

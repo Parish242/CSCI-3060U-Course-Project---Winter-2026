@@ -10,7 +10,7 @@ version = "0.1.0"
 packages = []
 
 [tool.pytest.ini_options]
-testpaths = ["Frontend/tests"]
+testpaths = ["Frontend/tests", "Backend/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]

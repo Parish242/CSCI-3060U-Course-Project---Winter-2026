@@ -1,25 +1,53 @@
 #!/bin/bash
 
-FRONTEND_PATH="Frontend/main.py"
-BACKEND_PATH="Backend/main.py"
-MERGE_PATH="Backend/merge_transactions.py"
+# For errors
+set -euo pipefail
+
+# Set the repo root to be where the script is being run for the sake of pathing
+repo_root="$(cd "$(dirname "$0")" && pwd)" 
+
+FRONTEND_PATH="$repo_root/Frontend/main.py"
+BACKEND_PATH="$repo_root/Backend/main.py"
+MERGE_PATH="$repo_root/Backend/merge_transactions.py"
+
+# Creates files and folders to store the data
+DAY_DIR="${1:-$repo_root/runs/day01}"  
+CURRENT_INPUT="${2:-$repo_root/current_accounts.txt}"
+MASTER_INPUT="${3:-$repo_root/master_accounts.txt}"
+
+# Pathing for those folders and setting them as absoulte paths
+mkdir -p "$DAY_DIR"
+DAY_DIR_ABS="$(cd "$DAY_DIR" && pwd)"
+
+# All the files for the simulated days
+WORK_CURRENT="$DAY_DIR_ABS/current_accounts.txt"
+WORK_MASTER="$DAY_DIR_ABS/master_accounts.txt"
+MERGED_FILE="$DAY_DIR_ABS/merged_transactions.txt"
+
+# Copy the prior days data
+cp "$CURRENT_INPUT" "$WORK_CURRENT"
+cp "$MASTER_INPUT" "$WORK_MASTER"
 
 TRANSACTION_TYPES=("login" "logout" "withdrawal" "transfer" "paybill" "deposit" "create" "delete" "disable" "changeplan")
 USERS=("John Doe" "Jane Smith" "Bob Johnson" "Alice Williams" "Charlie Brown")
 
-for((i=0; i<=$(( RANDOM % 4 + 3 )); i++));
-do
+# Changed the number of loops to make more consistant
+num_sessions=$(( RANDOM % 4 + 3 ))  
+
+for ((i=0; i<num_sessions; i++)); do
     user_index=$(( RANDOM % 5 ))
     user_account="$(( user_index + 1 ))"
 
     (
-        echo "${TRANSACTION_TYPES[0]}"
+        echo "login"
         echo "standard"
         echo "${USERS[$user_index]}"
 
-        for((i=0; i<=$(( RANDOM % 7 + 3 )); i++));
-        do
-            # Placeholder (this is the part where the transactions should take place)
+        num_transactions=$(( RANDOM % 7 + 3 ))  
+
+        # Changed it to J rather than I so we don't re-use
+        for ((j=0; j<num_transactions; j++)); do  
+        
             case $(( RANDOM % 4 )) in
                 0)
                     echo "withdrawal"
@@ -54,13 +82,10 @@ do
         done
 
         echo "logout"
-    ) | python "$FRONTEND_PATH"
-
-    sleep 1
+    ) | (cd "$DAY_DIR_ABS" && python "$FRONTEND_PATH" "$WORK_CURRENT")  
+# Changed to save each output as a file in a folder
 done
 
-python "$MERGE_PATH"
-
-sleep 1
-
-python "$BACKEND_PATH"
+# Merge and pass the files
+python "$MERGE_PATH" "$DAY_DIR_ABS" "$MERGED_FILE"  
+python "$BACKEND_PATH" "$MERGED_FILE" "$WORK_CURRENT" "$WORK_MASTER"  
